@@ -1,0 +1,90 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+def bisection_solver(func, a, b, tolerance=1e-6, max_iterations=100):
+    iterations_log = []
+    for iteration in range(max_iterations):
+        c = (a + b) / 2
+        iterations_log.append(c)
+
+        if func(c) == 0 or (b - a) / 2 < tolerance:
+            return c, iterations_log
+
+        if func(c) * func(a) < 0:
+            b = c
+        else:
+            a = c
+
+    raise ValueError("Bisection method did not converge within the specified number of iterations.")
+
+def relaxation_solver(func, alpha, initial_point, tolerance=1e-6, max_iterations=100):
+    iterations_log = []
+    x_n = initial_point
+
+    for iteration in range(max_iterations):
+        x_next = func(x_n, alpha)
+        iterations_log.append(x_next)
+
+        if abs(x_next - x_n) < tolerance:
+            return x_next, iterations_log
+
+        x_n = x_next
+
+    raise ValueError("Relaxation method did not converge within the specified number of iterations.")
+
+def newton_solver(func, derivative, initial_point, tolerance=1e-6, max_iterations=100):
+    iterations_log = []
+    x_n = initial_point
+
+    for iteration in range(max_iterations):
+        x_next = x_n - func(x_n) / derivative(x_n)
+        iterations_log.append(x_next)
+
+        if abs(func(x_next)) < tolerance:
+            return x_next, iterations_log
+
+        x_n = x_next
+
+    raise ValueError("Newton's method did not converge within the specified number of iterations.")
+
+def test_function(x):
+    return (x - 3) * (x - 1)**2
+
+def derivative_test_function(x):
+    return (x - 1)**2 + 2 * (x - 3) * (x - 1)
+
+def relaxation_function(x, alpha):
+    return x - alpha * test_function(x)
+
+def plot_convergence_graph(algorithm, iterations_log, title):
+    plt.plot(iterations_log, label=algorithm)
+    plt.axhline(0, color='black', linestyle='--', linewidth=0.8)
+    plt.title(title)
+    plt.xlabel('Iterations')
+    plt.ylabel('Root Approximation')
+    plt.legend()
+    plt.show()
+
+def main():
+    initial_point = 2
+    bisection_solution, bisection_iterations = bisection_solver(test_function, 1, 3)
+    relaxation_solution, relaxation_iterations = relaxation_solver(relaxation_function, 0.1, initial_point)
+    newton_solution, newton_iterations = newton_solver(test_function, derivative_test_function, initial_point)
+
+    print("Bisection Method:")
+    print("Root:", bisection_solution)
+    print("Iterations Log:", bisection_iterations)
+    plot_convergence_graph("Bisection", bisection_iterations, "Bisection Convergence")
+
+    print("\nRelaxation (Fixed-Point) Method:")
+    print("Root:", relaxation_solution)
+    print("Iterations Log:", relaxation_iterations)
+    plot_convergence_graph("Relaxation", relaxation_iterations, "Relaxation Convergence")
+
+    print("\nNewton's Method:")
+    print("Root:", newton_solution)
+    print("Iterations Log:", newton_iterations)
+    plot_convergence_graph("Newton", newton_iterations, "Newton Convergence")
+
+if __name__ == "__main__":
+    main()
