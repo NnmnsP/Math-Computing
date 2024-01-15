@@ -1,0 +1,30 @@
+def bisection_method(func, a, b, tol=1e-6, max_iter=100):
+    if func(a) * func(b) > 0:
+        raise ValueError("Function values at endpoints must have different signs.")
+
+    iteration = 0
+    while (b - a) / 2 > tol and iteration < max_iter:
+        c = (a + b) / 2
+        if func(c) == 0:
+            return c
+        elif func(c) * func(a) < 0:
+            b = c
+        else:
+            a = c
+        iteration += 1
+
+    return (a + b) / 2
+
+# Example usage:
+if __name__ == "__main__":
+    # Define the target function
+    def f(x):
+        return x**2 - 4
+
+    # Define the interval [a, b]
+    a, b = 0, 3
+
+    # Find the root using bisection method
+    root = bisection_method(f, a, b)
+
+    print(f"Root found at x = {root}")
