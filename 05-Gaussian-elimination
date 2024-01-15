@@ -1,0 +1,48 @@
+import numpy as np
+
+def gaussian_elimination(A, b):
+    # Combine matrix A and vector b
+    augmented_matrix = np.column_stack((A, b))
+
+    n = len(b)
+
+    for i in range(n):
+        # Check if the leading coefficient is zero, swap rows if necessary
+        if augmented_matrix[i, i] == 0:
+            non_zero_row = np.argmax(np.abs(augmented_matrix[i:, i])) + i
+            augmented_matrix[[i, non_zero_row]] = augmented_matrix[[non_zero_row, i]]
+
+        # Normalize the leading row
+        augmented_matrix[i] = augmented_matrix[i] / augmented_matrix[i, i]
+
+        # Eliminate non-zero entries below the leading coefficient
+        for j in range(i + 1, n):
+            augmented_matrix[j] = augmented_matrix[j] - augmented_matrix[j, i] * augmented_matrix[i]
+
+        print_matrix(augmented_matrix)
+
+    # Back-substitution
+    x = np.zeros(n)
+    for i in range(n - 1, -1, -1):
+        x[i] = augmented_matrix[i, -1] - np.dot(augmented_matrix[i, i+1:n], x[i+1:])
+        x[i] /= augmented_matrix[i, i]
+
+    return x
+
+def print_matrix(matrix):
+    for row in matrix:
+        print(" ".join(map(str, row[:-1])) + " | " + str(row[-1]))
+    print("\n")
+
+# Test the function
+A = np.array([[1, 1, 1], [2, 2, 1], [3, 2, 1]])
+b = np.array([3, 5, 6])
+
+print("Initial matrix:")
+print_matrix(np.column_stack((A, b)))
+print()
+
+solution = gaussian_elimination(A, b)
+
+print("\nSolution:")
+print(solution)
