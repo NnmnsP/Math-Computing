@@ -1,0 +1,106 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import time
+
+def gaussian_elimination(A, b):
+    n = len(b)
+    
+    # Gaussian elimination
+    for i in range(n):
+        pivot_row = A[i]
+        pivot_element = pivot_row[i]
+
+        # Normalize the pivot row
+        A[i] = pivot_row / pivot_element
+        b[i] /= pivot_element
+
+        # Eliminate other rows
+        for j in range(n):
+            if i != j:
+                factor = A[j][i]
+                A[j] -= factor * A[i]
+                b[j] -= factor * b[i]
+
+    # Back-substitution
+    x = np.zeros(n)
+    for i in range(n - 1, -1, -1):
+        x[i] = b[i] - np.dot(A[i][i+1:], x[i+1:])
+
+    return x
+
+def generate_random_matrix(dim):
+    return np.random.rand(dim, dim)
+
+def generate_hilbert_matrix(dim):
+    return np.array([[1 / (i + j + 1) for j in range(dim)] for i in range(dim)])
+
+def calculate_residual_error(A, x, b):
+    return np.linalg.norm(np.dot(A, x) - b)
+
+def calculate_absolute_error(x, real_solution):
+    return np.linalg.norm(x - real_solution)
+
+def experiment(dimensions, matrix_generator):
+    residual_errors = []
+    absolute_errors = []
+
+    for dim in dimensions:
+        A = matrix_generator(dim)
+        x_real = np.random.rand(dim)
+        b = np.dot(A, x_real)
+
+        start_time = time.time()
+        x = gaussian_elimination(A.copy(), b.copy())
+        end_time = time.time()
+
+        running_time = end_time - start_time
+        residual_error = calculate_residual_error(A, x, b)
+        absolute_error = calculate_absolute_error(x, x_real)
+
+        print(f"Dimension: {dim}, Running Time: {running_time:.6f} seconds")
+
+        residual_errors.append(residual_error)
+        absolute_errors.append(absolute_error)
+
+    return residual_errors, absolute_errors
+
+def plot_errors(dimensions, errors1, errors2, label1, label2):
+    plt.plot(dimensions, errors1, label=label1)
+    plt.plot(dimensions, errors2, label=label2)
+    plt.xlabel('Dimension')
+    plt.ylabel('Error')
+    plt.legend()
+    plt.title('Error Growth with Dimensionality')
+    plt.show()
+
+def plot_running_time(dimensions, running_times):
+    plt.plot(dimensions, running_times, label='Running Time')
+    plt.xlabel('Dimension')
+    plt.ylabel('Time (seconds)')
+    plt.title('Running Time vs Dimension')
+    plt.show()
+
+if __name__ == "__main__":
+    dimensions = list(range(2, 101))
+    random_residual_errors, random_absolute_errors = experiment(dimensions, generate_random_matrix)
+    hilbert_residual_errors, hilbert_absolute_errors = experiment(dimensions, generate_hilbert_matrix)
+
+    # Plot errors for random matrix and Hilbert matrix
+    plot_errors(dimensions, random_residual_errors, hilbert_residual_errors, 'Random Matrix', 'Hilbert Matrix')
+    plot_errors(dimensions, random_absolute_errors, hilbert_absolute_errors, 'Random Matrix', 'Hilbert Matrix')
+
+    # Plot running time
+    running_times = []
+    for dim in dimensions:
+        A = generate_random_matrix(dim)
+        x_real = np.random.rand(dim)
+        b = np.dot(A, x_real)
+
+        start_time = time.time()
+        np.linalg.solve(A, b)
+        end_time = time.time()
+
+        running_time = end_time - start_time
+        running_times.append(running_time)
+
+    plot_running_time(dimensions, running_times)
